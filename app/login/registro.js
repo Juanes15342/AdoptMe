@@ -1,6 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import { supabase } from '@/lib/supabaseClient'
+
+
 
 const ROLES = [
   { value: 'administrador', label: 'Administrador' },
@@ -15,16 +18,63 @@ export default function RegisterPage({ onBack }) {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
 
-  const handleSubmit = (event) => {
-    event.preventDefault()
-    setMessage(`Simulando registro de ${email} como ${role}`)
-    setLoading(true)
+ const handleSubmit = async (event) => {
+  event.preventDefault()
+  setLoading(true)
+  setMessage('Registrando usuario...')
 
-    // Simulación de petición al servidor (base de datos no implementada aún)
-    setTimeout(() => {
+  try {
+    // 1️⃣ Crear usuario en Supabase Auth
+    const { data, error } = await supabase.auth.signUp({
+      email: email,
+      password: password,
+    })
+
+    if (error) {
+      setMessage(error.message)
       setLoading(false)
-      setMessage('Registro exitoso. Simulación completada.')
-    }, 800)
+      return
+    }
+
+    const user = data.user
+
+    // 2️⃣ Obtener id del tipo de cuenta
+    const { data: tipoCuenta, error: roleError } = await supabase
+      .from('tipo_cuenta')
+      .select('id')
+      .eq('nombre', role)
+      .single()
+
+    if (roleError) {
+      setMessage('Error obteniendo tipo de cuenta')
+      setLoading(false)
+      return
+    }
+
+    // 3️⃣ Guardar usuario en tabla usuarios
+    const { error: insertError } = await supabase
+      .from('usuarios')
+      .insert({
+        id: user.id,
+        email: email,
+        tipo_cuenta_id: tipoCuenta.id
+      })
+
+    if (insertError) {
+      setMessage(insertError.message)
+      setLoading(false)
+      return
+    }
+
+    setMessage('Usuario registrado correctamente')
+
+  } catch (err) {
+    setMessage('Error inesperado')
+  }
+
+  setLoading(false)
+
+   
   }
 
   return (
