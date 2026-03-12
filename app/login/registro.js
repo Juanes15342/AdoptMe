@@ -1,7 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import RegisterPage from './registro'
+import { supabase } from '@/lib/supabaseClient'
+
+
 
 const ROLES = [
   { value: 'administrador', label: 'Administrador' },
@@ -9,45 +11,102 @@ const ROLES = [
   { value: 'usuario', label: 'Usuario' },
 ]
 
-export default function LoginPage() {
+export default function RegisterPage({ onBack }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [role, setRole] = useState(ROLES[0].value)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
-  const [showRegister, setShowRegister] = useState(false)
 
-  const handleSubmit = (event) => {
-    event.preventDefault()
-    setMessage(`Simulando login de ${email} como ${role}`)
-    setLoading(true)
+ const handleSubmit = async (event) => {
+  event.preventDefault()
+  setLoading(true)
+  setMessage('Registrando usuario...')
 
-    // Simulación de petición al servidor
-    setTimeout(() => {
+  try {
+    // 1️⃣ Crear usuario en Supabase Auth
+    const { data, error } = await supabase.auth.signUp({
+      email: email,
+      password: password,
+    })
+
+    if (error) {
+      setMessage(error.message)
       setLoading(false)
-    }, 800)
+      return
+    }
+
+    const user = data.user
+
+    // 2️⃣ Obtener id del tipo de cuenta
+    const { data: tipoCuenta, error: roleError } = await supabase
+      .from('tipo_cuenta')
+      .select('id')
+      .eq('nombre', role)
+      .single()
+
+    if (roleError) {
+      setMessage('Error obteniendo tipo de cuenta')
+      setLoading(false)
+      return
+    }
+
+    // 3️⃣ Guardar usuario en tabla usuarios
+    const { error: insertError } = await supabase
+      .from('usuarios')
+      .insert({
+        id: user.id,
+        email: email,
+        tipo_cuenta_id: tipoCuenta.id
+      })
+
+    if (insertError) {
+      setMessage(insertError.message)
+      setLoading(false)
+      return
+    }
+
+    setMessage('Usuario registrado correctamente')
+
+  } catch (err) {
+    setMessage('Error inesperado')
   }
 
-  const handleRegisterClick = () => {
-    setShowRegister(true)
-  }
+  setLoading(false)
 
-  if (showRegister) {
-    return <RegisterPage onBack={() => setShowRegister(false)} />
+   
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
-        <h1 className="text-2xl font-semibold text-gray-900 mb-6 text-center">Iniciar sesión</h1>
+        <h1 className="text-2xl font-semibold text-gray-900 mb-6 text-center">Registrarse</h1>
 
         {message && (
-          <div className="mb-4 rounded-md bg-blue-50 border border-blue-200 px-4 py-2 text-sm text-blue-700">
+          <div className="mb-4 rounded-md bg-green-50 border border-green-200 px-4 py-2 text-sm text-green-700">
             {message}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="role">
+              Rol
+            </label>
+            <select
+              id="role"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 outline-none bg-white"
+            >
+              {ROLES.map((r) => (
+                <option key={r.value} value={r.value}>
+                  {r.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="email">
               Correo electrónico
@@ -78,39 +137,21 @@ export default function LoginPage() {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="role">
-              Rol
-            </label>
-            <select
-              id="role"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 outline-none bg-white"
-            >
-              {ROLES.map((r) => (
-                <option key={r.value} value={r.value}>
-                  {r.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
           <div className="flex gap-3 pt-2">
             <button
               type="submit"
               disabled={loading}
               className="flex-1 inline-flex justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 disabled:opacity-60"
             >
-              {loading ? 'Entrando...' : 'Entrar'}
+              {loading ? 'Registrando...' : 'Registrar'}
             </button>
 
             <button
               type="button"
-              onClick={handleRegisterClick}
+              onClick={onBack}
               className="flex-1 inline-flex justify-center rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
             >
-              Registrar
+              Volver al Login
             </button>
           </div>
         </form>
