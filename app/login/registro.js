@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { supabase } from '@/lib/supabaseClient'
 
 
@@ -20,6 +21,10 @@ export default function RegisterPage({ onBack }) {
 
  const handleSubmit = async (event) => {
   event.preventDefault()
+  if (!supabase) {
+    setMessage('Error: Supabase no configurado. Revisa .env.local')
+    return
+  }
   setLoading(true)
   setMessage('Registrando usuario...')
 
@@ -80,6 +85,15 @@ export default function RegisterPage({ onBack }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
+        <div className="mb-6 flex justify-center">
+          <Image
+            src="/logo.png"
+            alt="Adopt Me"
+            width={80}
+            height={80}
+            className="h-20 w-20 rounded-full object-contain"
+          />
+        </div>
         <h1 className="text-2xl font-semibold text-gray-900 mb-6 text-center">Registrarse</h1>
 
         {message && (

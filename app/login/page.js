@@ -1,6 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 import RegisterPage from './registro'
 
 const ROLES = [
@@ -9,13 +11,24 @@ const ROLES = [
   { value: 'usuario', label: 'Usuario' },
 ]
 
+const VALID_ROLES = ROLES.map((r) => r.value)
+
 export default function LoginPage() {
+  const searchParams = useSearchParams()
+  const rolFromUrl = searchParams.get('rol')
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [role, setRole] = useState(ROLES[0].value)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [showRegister, setShowRegister] = useState(false)
+
+  useEffect(() => {
+    if (rolFromUrl && VALID_ROLES.includes(rolFromUrl)) {
+      setRole(rolFromUrl)
+    }
+  }, [rolFromUrl])
 
   const handleSubmit = (event) => {
     event.preventDefault()
@@ -39,6 +52,15 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
+        <div className="mb-6 flex justify-center">
+          <Image
+            src="/logo.png"
+            alt="Adopt Me"
+            width={80}
+            height={80}
+            className="h-20 w-20 rounded-full object-contain"
+          />
+        </div>
         <h1 className="text-2xl font-semibold text-gray-900 mb-6 text-center">Iniciar sesión</h1>
 
         {message && (
@@ -76,24 +98,6 @@ export default function LoginPage() {
               className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 outline-none"
               placeholder="Tu contraseña"
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="role">
-              Rol
-            </label>
-            <select
-              id="role"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 outline-none bg-white"
-            >
-              {ROLES.map((r) => (
-                <option key={r.value} value={r.value}>
-                  {r.label}
-                </option>
-              ))}
-            </select>
           </div>
 
           <div className="flex gap-3 pt-2">
