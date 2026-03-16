@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import RegisterPage from './registro'
 
@@ -23,6 +23,9 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [showRegister, setShowRegister] = useState(false)
+  
+// instancia del router para dirigir despues del login
+  const router = useRouter()
 
   useEffect(() => {
     if (rolFromUrl && VALID_ROLES.includes(rolFromUrl)) {
@@ -30,16 +33,45 @@ export default function LoginPage() {
     }
   }, [rolFromUrl])
 
-  const handleSubmit = (event) => {
-    event.preventDefault()
-    setMessage(`Simulando login de ${email} como ${role}`)
-    setLoading(true)
+  const handleSubmit = async (event) => {
+  event.preventDefault()
+  setLoading(true)
+  setMessage('Iniciando sesión...')
 
-    // Simulación de petición al servidor
-    setTimeout(() => {
-      setLoading(false)
-    }, 800)
-  }
+  //conexion a mi api para autenticar
+ try {
+     const response = await fetch('/api/auth', {
+       method: 'POST',
+       headers: {
+         'Content-Type': 'application/json',
+       },
+       body: JSON.stringify({
+         email: email,
+         password: password,
+       }),
+     })
+
+     const data = await response.json()
+
+     if (response.ok) {
+       setMessage('Login exitoso')
+       console.log('usuario logueado:', data.usuario)
+
+       router.push('/dashboard')
+     } else {
+       setMessage(data.error || 'Error en el login')
+     }
+   } catch (error) {
+
+     setMessage('Error de conexión. Inténtalo de nuevo.')
+
+     console.error('Error en fetch:', error)
+
+   } finally {
+     setLoading(false)
+   }
+}
+    
 
   const handleRegisterClick = () => {
     setShowRegister(true)
