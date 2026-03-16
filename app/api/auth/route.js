@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from "@/app/lib/supabaseServer";
+import { createServerSupabaseClient } from "@/lib/supabaseServer";
 import bcrypt from "bcryptjs";
 
 // POST - Login

@@ -2,9 +2,6 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { supabase } from '@/lib/supabaseClient'
-
-
 
 const ROLES = [
   { value: 'administrador', label: 'Administrador' },
@@ -19,67 +16,39 @@ export default function RegisterPage({ onBack }) {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
 
- const handleSubmit = async (event) => {
-  event.preventDefault()
-  if (!supabase) {
-    setMessage('Error: Supabase no configurado. Revisa .env.local')
-    return
-  }
-  setLoading(true)
-  setMessage('Registrando usuario...')
+  // conexion a mi api para registrar
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+    setLoading(true)
+    setMessage('Registrando usuario...')
 
-  try {
-    // 1️⃣ Crear usuario en Supabase Auth
-    const { data, error } = await supabase.auth.signUp({
-      email: email,
-      password: password,
-    })
-
-    if (error) {
-      setMessage(error.message)
-      setLoading(false)
-      return
-    }
-
-    const user = data.user
-
-    // 2️⃣ Obtener id del tipo de cuenta
-    const { data: tipoCuenta, error: roleError } = await supabase
-      .from('tipo_cuenta')
-      .select('id')
-      .eq('nombre', role)
-      .single()
-
-    if (roleError) {
-      setMessage('Error obteniendo tipo de cuenta')
-      setLoading(false)
-      return
-    }
-
-    // 3️⃣ Guardar usuario en tabla usuarios
-    const { error: insertError } = await supabase
-      .from('usuarios')
-      .insert({
-        id: user.id,
-        email: email,
-        tipo_cuenta_id: tipoCuenta.id
+    try {
+      const response = await fetch('/api/user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nombre: email,
+          email: email,
+          password: password,
+        }),
       })
 
-    if (insertError) {
-      setMessage(insertError.message)
+      const data = await response.json()
+
+      if (response.ok) {
+        setMessage('Usuario registrado correctamente')
+        console.log('usuario registrado:', data)
+      } else {
+        setMessage(data.error || 'Error en el registro')
+      }
+    } catch (error) {
+      setMessage('Error de conexión. Inténtalo de nuevo.')
+      console.error('Error en fetch:', error)
+    } finally {
       setLoading(false)
-      return
     }
-
-    setMessage('Usuario registrado correctamente')
-
-  } catch (err) {
-    setMessage('Error inesperado')
-  }
-
-  setLoading(false)
-
-   
   }
 
   return (

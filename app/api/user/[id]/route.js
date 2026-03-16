@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from "@/app/lib/supabaseServer";
+import { createServerSupabaseClient } from "@/lib/supabaseServer";
 
 // GET - Obtener un usuario por ID
 export async function GET(request, { params }) {
