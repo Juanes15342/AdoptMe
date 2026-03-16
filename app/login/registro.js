@@ -111,7 +111,7 @@ export default function RegisterPage({ onBack }) {
               id="role"
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 outline-none bg-white"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 outline-none bg-white"
             >
               {ROLES.map((r) => (
                 <option key={r.value} value={r.value}>
@@ -131,7 +131,7 @@ export default function RegisterPage({ onBack }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 outline-none"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 outline-none"
               placeholder="tucorreo@ejemplo.com"
             />
           </div>
@@ -146,7 +146,7 @@ export default function RegisterPage({ onBack }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 outline-none"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 outline-none"
               placeholder="Tu contraseña"
             />
           </div>
