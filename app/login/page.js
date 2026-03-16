@@ -57,7 +57,7 @@ export default function LoginPage() {
        setMessage('Login exitoso')
        console.log('usuario logueado:', data.usuario)
 
-       router.push('/dashboard')
+       router.push('/')
      } else {
        setMessage(data.error || 'Error en el login')
      }
