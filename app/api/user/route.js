@@ -2,6 +2,15 @@ import { createServerSupabaseClient } from "@/lib/supabaseServer";
 import bcrypt from "bcryptjs";
 
 const ROLES_TIPO_CUENTA = ["administrador", "empresa", "usuario"];
+const COMPANY_NAME_COLUMNS = ["nombre_empresa", "empresa_nombre", "razon_social"];
+
+async function findCompanyNameColumn(supabase) {
+    for (const col of COMPANY_NAME_COLUMNS) {
+        const { error } = await supabase.from("usuarios").select(`id, ${col}`).limit(1);
+        if (!error) return col;
+    }
+    return null;
+}
 
 // GET - Obtener todos los usuarios
 export async function GET() {
@@ -21,7 +30,7 @@ export async function GET() {
 export async function POST(request) {
     const supabase = createServerSupabaseClient();
     const body = await request.json();
-    const { email, password, nombre, rol } = body;
+    const { email, password, nombre, rol, nombreEmpresa } = body;
 
     if (!email || !password) {
         return Response.json(
@@ -62,14 +71,25 @@ export async function POST(request) {
             ? nombre.trim()
             : String(email).split("@")[0];
 
+    const companyColumn = await findCompanyNameColumn(supabase);
+    const companyValue =
+        typeof nombreEmpresa === "string" && nombreEmpresa.trim()
+            ? nombreEmpresa.trim()
+            : null;
+
+    const insertPayload = {
+        nombre: nombreFinal,
+        email: String(email).trim().toLowerCase(),
+        password: passwordEncriptada,
+        tipo_cuenta_id: tipoCuenta.id,
+    };
+    if (rolNormalizado === "empresa" && companyColumn && companyValue) {
+        insertPayload[companyColumn] = companyValue;
+    }
+
     const { data, error } = await supabase
         .from("usuarios")
-        .insert({
-            nombre: nombreFinal,
-            email: String(email).trim().toLowerCase(),
-            password: passwordEncriptada,
-            tipo_cuenta_id: tipoCuenta.id,
-        })
+        .insert(insertPayload)
         .select("*, tipo_cuenta(*)")
         .single();
 

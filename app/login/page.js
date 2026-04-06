@@ -27,11 +27,33 @@ export default function LoginPage() {
 // instancia del router para dirigir despues del login
   const router = useRouter()
 
+  // Si viene el rol por URL lo seleccionamos
   useEffect(() => {
     if (rolFromUrl && VALID_ROLES.includes(rolFromUrl)) {
       setRole(rolFromUrl)
     }
   }, [rolFromUrl])
+
+  // Si ya hay sesión guardada, redirigimos directamente a su dashboard
+  useEffect(() => {
+    try {
+      const stored = window.sessionStorage.getItem('adoptme_user')
+      if (stored) {
+        const usuario = JSON.parse(stored)
+        const rolUsuario = (usuario.rol || '').toLowerCase()
+
+        if (rolUsuario === 'administrador') {
+          router.push('/dashboard/admin')
+        } else if (rolUsuario === 'empresa') {
+          router.push('/')
+        } else if (rolUsuario === 'usuario') {
+          router.push('/dashboard/user')
+        }
+      }
+    } catch (e) {
+      console.error('Error leyendo sesión almacenada', e)
+    }
+  }, [router])
 
   const handleSubmit = async (event) => {
   event.preventDefault()
@@ -54,19 +76,28 @@ export default function LoginPage() {
      const data = await response.json()
 
     if (response.ok) {
-  setMessage('Login exitoso')
-  console.log('usuario logueado:', data.usuario)
+      setMessage('Login exitoso')
+      console.log('usuario logueado:', data.usuario)
 
- const rolUsuario = data.usuario.rol.toLowerCase()
+      // Guardar sesión temporal hasta recargar
+      try {
+        window.sessionStorage.setItem('adoptme_user', JSON.stringify(data.usuario))
+        // Avisar a componentes (Navbar) sin recargar la página
+        window.dispatchEvent(new Event('adoptme-auth-changed'))
+      } catch (e) {
+        console.error('No se pudo guardar la sesión', e)
+      }
 
-if (rolUsuario === "administrador") {
-  router.push("/dashboard/admin")
-} else if (rolUsuario === "empresa") {
-  router.push("/dashboard/empresa")
-} else if (rolUsuario === "usuario") {
-  router.push("/dashboard/user")
-}
-} else {
+      const rolUsuario = data.usuario.rol.toLowerCase()
+
+      if (rolUsuario === "administrador") {
+        router.push("/dashboard/admin")
+      } else if (rolUsuario === "empresa") {
+        router.push("/")
+      } else if (rolUsuario === "usuario") {
+        router.push("/dashboard/user")
+      }
+    } else {
        setMessage(data.error || 'Error en el login')
      }
    } catch (error) {
@@ -90,8 +121,8 @@ if (rolUsuario === "administrador") {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-orange-50/80 to-stone-100 px-4">
+      <div className="w-full max-w-md rounded-2xl border border-amber-200/70 bg-white/95 p-8 shadow-lg">
         <div className="mb-6 flex justify-center">
           <Image
             src="/logo.png"
@@ -104,7 +135,7 @@ if (rolUsuario === "administrador") {
         <h1 className="text-2xl font-semibold text-gray-900 mb-6 text-center">Iniciar sesión</h1>
 
         {message && (
-          <div className="mb-4 rounded-md bg-blue-50 border border-blue-200 px-4 py-2 text-sm text-blue-700">
+          <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800">
             {message}
           </div>
         )}
@@ -120,7 +151,7 @@ if (rolUsuario === "administrador") {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 outline-none"
+              className="block w-full rounded-md border border-stone-300 px-3 py-2 text-sm text-gray-900 shadow-sm outline-none focus:border-amber-500 focus:ring-amber-500"
               placeholder="tucorreo@ejemplo.com"
             />
           </div>
@@ -135,7 +166,7 @@ if (rolUsuario === "administrador") {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 outline-none"
+              className="block w-full rounded-md border border-stone-300 px-3 py-2 text-sm text-gray-900 shadow-sm outline-none focus:border-amber-500 focus:ring-amber-500"
               placeholder="Tu contraseña"
             />
           </div>
@@ -144,7 +175,7 @@ if (rolUsuario === "administrador") {
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 inline-flex justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 disabled:opacity-60"
+              className="flex-1 inline-flex justify-center rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-amber-700 disabled:opacity-60"
             >
               {loading ? 'Entrando...' : 'Entrar'}
             </button>
@@ -152,7 +183,7 @@ if (rolUsuario === "administrador") {
             <button
               type="button"
               onClick={handleRegisterClick}
-              className="flex-1 inline-flex justify-center rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              className="flex-1 inline-flex justify-center rounded-md border border-amber-300 px-4 py-2 text-sm font-medium text-amber-800 bg-amber-50 hover:bg-amber-100"
             >
               Registrar
             </button>

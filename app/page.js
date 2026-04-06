@@ -1,5 +1,5 @@
-import Link from "next/link";
 import Image from "next/image";
+import HomeGuestCTA from "@/app/components/HomeGuestCTA";
 
 export default function Home() {
   return (
@@ -46,6 +46,7 @@ export default function Home() {
               abandono y promover la tenencia responsable de mascotas.
             </p>
           </div>
+
         </div>
       </section>
 
@@ -158,28 +159,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="border-t border-stone-200/80 bg-amber-600 dark:border-stone-700 dark:bg-amber-700">
-        <div className="mx-auto max-w-4xl px-6 py-12 sm:py-16">
-          <p className="mb-6 text-center text-lg font-medium text-amber-50">
-            ¿Quieres adoptar o ser parte del cambio?
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link
-              href="/login?rol=usuario"
-              className="inline-flex items-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-amber-800 shadow-md transition hover:bg-amber-50"
-            >
-              Iniciar sesión
-            </Link>
-            <Link
-              href="/registro"
-              className="inline-flex items-center rounded-full border-2 border-amber-50 bg-transparent px-6 py-3 text-sm font-semibold text-amber-50 transition hover:bg-amber-50 hover:text-amber-800"
-            >
-              Registrarse
-            </Link>
-          </div>
-        </div>
-      </section>
+      <HomeGuestCTA />
     </div>
   );
 }

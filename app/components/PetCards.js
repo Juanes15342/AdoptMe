@@ -9,11 +9,12 @@ export default function PetCard({ mascota }) {
     edad,
     descripcion,
     foto_url: fotoUrl,
+    empresa_nombre: empresaNombre,
   } = mascota;
 
   return (
-    <article className="flex flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="relative aspect-[4/3] w-full bg-stone-100 dark:bg-zinc-800">
+    <article className="flex h-full min-h-[420px] flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="relative h-64 w-full bg-stone-100 dark:bg-zinc-800">
         {fotoUrl ? (
           <img
             src={fotoUrl}
@@ -31,12 +32,15 @@ export default function PetCard({ mascota }) {
         <h2 className="font-serif text-xl font-semibold text-stone-800 dark:text-stone-100">
           {nombre}
         </h2>
+        <p className="mt-1 text-xs font-medium uppercase tracking-wide text-amber-700 dark:text-amber-400">
+          {empresaNombre ? `Publicado por: ${empresaNombre}` : "Publicado por: Empresa"}
+        </p>
         <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
           {[especie, raza].filter(Boolean).join(" · ")}
           {edad ? ` · ${edad}` : ""}
         </p>
         {descripcion ? (
-          <p className="mt-2 line-clamp-3 flex-1 text-sm text-stone-600 dark:text-stone-400">
+          <p className="mt-2 line-clamp-3 min-h-[60px] flex-1 text-sm text-stone-600 dark:text-stone-400">
             {descripcion}
           </p>
         ) : null}

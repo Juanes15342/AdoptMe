@@ -1,6 +1,35 @@
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
 import PetCard from "@/app/components/PetCards";
 
+const OWNER_CANDIDATE_COLUMNS = [
+  "empresa_id",
+  "empresa_usuario_id",
+  "usuario_id",
+  "owner_id",
+  "creado_por",
+];
+const COMPANY_NAME_CANDIDATE_COLUMNS = [
+  "nombre_empresa",
+  "empresa_nombre",
+  "razon_social",
+];
+
+async function findOwnerColumn(supabase) {
+  for (const column of OWNER_CANDIDATE_COLUMNS) {
+    const { error } = await supabase.from("mascotas").select(`id, ${column}`).limit(1);
+    if (!error) return column;
+  }
+  return null;
+}
+
+async function findCompanyColumnInUsuarios(supabase) {
+  for (const column of COMPANY_NAME_CANDIDATE_COLUMNS) {
+    const { error } = await supabase.from("usuarios").select(`id, ${column}`).limit(1);
+    if (!error) return column;
+  }
+  return null;
+}
+
 export const metadata = {
   title: "Mascotas en adopción | AdoptMe",
   description: "Catálogo de mascotas disponibles para adopción",
@@ -21,9 +50,14 @@ export default async function MascotasPage() {
   }
 
   const supabase = createServerSupabaseClient();
+  const ownerColumn = await findOwnerColumn(supabase);
+  const companyColumn = await findCompanyColumnInUsuarios(supabase);
+  const baseColumns = "id, nombre, especie, raza, edad, descripcion, foto_url";
+  const selectColumns = ownerColumn ? `${baseColumns}, ${ownerColumn}` : baseColumns;
+
   const { data: mascotas, error } = await supabase
     .from("mascotas")
-    .select("id, nombre, especie, raza, edad, descripcion, foto_url")
+    .select(selectColumns)
     .eq("disponible", true)
     .order("created_at", { ascending: false });
 
@@ -36,6 +70,28 @@ export default async function MascotasPage() {
       </div>
     );
   }
+
+  const getOwnerId = (mascota) => (ownerColumn ? mascota?.[ownerColumn] ?? null : null);
+
+  const empresaIds = [...new Set((mascotas ?? []).map(getOwnerId).filter(Boolean))];
+  let empresasMap = {};
+  if (empresaIds.length) {
+    const selectUsuarios = companyColumn
+      ? `id, nombre, ${companyColumn}`
+      : "id, nombre";
+    const { data: empresas } = await supabase
+      .from("usuarios")
+      .select(selectUsuarios)
+      .in("id", empresaIds);
+    empresasMap = Object.fromEntries(
+      (empresas ?? []).map((e) => [e.id, e?.[companyColumn] || e.nombre || "Empresa"])
+    );
+  }
+
+  const mascotasConEmpresa = (mascotas ?? []).map((m) => ({
+    ...m,
+    empresa_nombre: empresasMap[getOwnerId(m)] || "Empresa",
+  }));
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] w-full bg-stone-50 dark:bg-zinc-950">
@@ -55,7 +111,7 @@ export default async function MascotasPage() {
           </p>
         ) : (
           <ul className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {mascotas.map((m) => (
+            {mascotasConEmpresa.map((m) => (
               <li key={m.id}>
                 <PetCard mascota={m} />
               </li>

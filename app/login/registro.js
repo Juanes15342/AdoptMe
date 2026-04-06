@@ -10,8 +10,10 @@ const ROLES = [
 ]
 
 export default function RegisterPage({ onBack }) {
+  const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [companyName, setCompanyName] = useState('')
   const [role, setRole] = useState(ROLES[0].value)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
@@ -29,7 +31,8 @@ export default function RegisterPage({ onBack }) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          nombre: email.split("@")[0],
+          nombre: role === 'empresa' ? companyName : username,
+          nombreEmpresa: companyName,
           email: email,
           password: password,
           rol: role,
@@ -53,8 +56,8 @@ export default function RegisterPage({ onBack }) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-orange-50/80 to-stone-100 px-4">
+      <div className="w-full max-w-md rounded-2xl border border-amber-200/70 bg-white/95 p-8 shadow-lg">
         <div className="mb-6 flex justify-center">
           <Image
             src="/logo.png"
@@ -67,7 +70,7 @@ export default function RegisterPage({ onBack }) {
         <h1 className="text-2xl font-semibold text-gray-900 mb-6 text-center">Registrarse</h1>
 
         {message && (
-          <div className="mb-4 rounded-md bg-green-50 border border-green-200 px-4 py-2 text-sm text-green-700">
+          <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800">
             {message}
           </div>
         )}
@@ -81,7 +84,7 @@ export default function RegisterPage({ onBack }) {
               id="role"
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 outline-none bg-white"
+              className="block w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm outline-none focus:border-amber-500 focus:ring-amber-500"
             >
               {ROLES.map((r) => (
                 <option key={r.value} value={r.value}>
@@ -90,6 +93,40 @@ export default function RegisterPage({ onBack }) {
               ))}
             </select>
           </div>
+
+          {role !== 'empresa' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="username">
+                Nombre de usuario
+              </label>
+              <input
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required={role !== 'empresa'}
+                className="block w-full rounded-md border border-stone-300 px-3 py-2 text-sm text-gray-900 shadow-sm outline-none focus:border-amber-500 focus:ring-amber-500"
+                placeholder="Tu nombre de usuario"
+              />
+            </div>
+          )}
+
+          {role === 'empresa' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="companyName">
+                Nombre de empresa
+              </label>
+              <input
+                id="companyName"
+                type="text"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                required
+                className="block w-full rounded-md border border-stone-300 px-3 py-2 text-sm text-gray-900 shadow-sm outline-none focus:border-amber-500 focus:ring-amber-500"
+                placeholder="Nombre de tu empresa"
+              />
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="email">
@@ -101,7 +138,7 @@ export default function RegisterPage({ onBack }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 outline-none"
+              className="block w-full rounded-md border border-stone-300 px-3 py-2 text-sm text-gray-900 shadow-sm outline-none focus:border-amber-500 focus:ring-amber-500"
               placeholder="tucorreo@ejemplo.com"
             />
           </div>
@@ -116,7 +153,7 @@ export default function RegisterPage({ onBack }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 outline-none"
+              className="block w-full rounded-md border border-stone-300 px-3 py-2 text-sm text-gray-900 shadow-sm outline-none focus:border-amber-500 focus:ring-amber-500"
               placeholder="Tu contraseña"
             />
           </div>
@@ -125,7 +162,7 @@ export default function RegisterPage({ onBack }) {
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 inline-flex justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 disabled:opacity-60"
+              className="flex-1 inline-flex justify-center rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-amber-700 disabled:opacity-60"
             >
               {loading ? 'Registrando...' : 'Registrar'}
             </button>
@@ -133,7 +170,7 @@ export default function RegisterPage({ onBack }) {
             <button
               type="button"
               onClick={onBack}
-              className="flex-1 inline-flex justify-center rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              className="flex-1 inline-flex justify-center rounded-md border border-amber-300 px-4 py-2 text-sm font-medium text-amber-800 bg-amber-50 hover:bg-amber-100"
             >
               Volver al Login
             </button>

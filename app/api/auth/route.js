@@ -31,6 +31,7 @@ export async function POST(request) {
         usuario: {
             id: usuario.id,
             nombre: usuario.nombre,
+            nombre_empresa: usuario.nombre_empresa ?? usuario.empresa_nombre ?? null,
             email: usuario.email,
             rol: usuario.tipo_cuenta?.nombre
         }
