@@ -9,7 +9,7 @@ export default function EmpresaInicioCTA() {
   useEffect(() => {
     const readUsuario = () => {
       try {
-        const stored = window.sessionStorage.getItem('adoptme_user')
+        const stored = window.localStorage.getItem('adoptme_user')
         setUsuario(stored ? JSON.parse(stored) : null)
       } catch {
         setUsuario(null)

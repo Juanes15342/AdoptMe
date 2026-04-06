@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export default function PetCard({ mascota }) {
+export default function PetCard({ mascota, adopcionSlot = null }) {
   const {
     id,
     nombre,
@@ -44,12 +44,16 @@ export default function PetCard({ mascota }) {
             {descripcion}
           </p>
         ) : null}
-        <Link
-          href={`/mascotas/${id}`}
-          className="mt-4 inline-flex justify-center rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700"
-        >
-          Ver detalle
-        </Link>
+        {adopcionSlot ? (
+          adopcionSlot
+        ) : (
+          <Link
+            href={`/mascotas/${id}`}
+            className="mt-4 inline-flex justify-center rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700"
+          >
+            Ver detalle
+          </Link>
+        )}
       </div>
     </article>
   );

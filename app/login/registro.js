@@ -62,8 +62,7 @@ export default function RegisterPage({ onBack }) {
 
         const rolUsuario = String(usuario.rol || '').toLowerCase()
         if (rolUsuario === 'administrador') router.push('/dashboard/admin')
-        else if (rolUsuario === 'empresa') router.push('/dashboard/empresa')
-        else router.push('/dashboard/user')
+        else router.push('/')
       } else {
         setMessage(data.error || 'Error en el registro')
       }
@@ -76,7 +75,7 @@ export default function RegisterPage({ onBack }) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-orange-50/80 to-stone-100 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-background bg-gradient-to-br from-amber-50/90 via-[#fffbf0] to-orange-50/50 px-4 dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900">
       <div className="w-full max-w-md rounded-2xl border border-amber-200/70 bg-white/95 p-8 shadow-lg">
         <div className="mb-6 flex justify-center">
           <Image

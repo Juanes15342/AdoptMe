@@ -51,7 +51,7 @@ export default function Home() {
       </section>
 
       {/* Misión */}
-      <section className="border-t border-stone-200/80 bg-white dark:border-stone-700 dark:bg-stone-950">
+      <section className="border-t border-stone-200/80 bg-[#fffef8] dark:border-stone-700 dark:bg-stone-950">
         <div className="mx-auto max-w-4xl px-6 py-16 sm:py-24">
           <div className="mb-10 flex items-center gap-3">
             <span className="flex h-10 w-1 rounded-full bg-amber-500" />
@@ -84,7 +84,7 @@ export default function Home() {
       </section>
 
       {/* Visión */}
-      <section className="border-t border-stone-200/80 bg-stone-50/50 dark:border-stone-700 dark:bg-stone-900/50">
+      <section className="border-t border-stone-200/80 bg-amber-50/40 dark:border-stone-700 dark:bg-stone-900/50">
         <div className="mx-auto max-w-4xl px-6 py-16 sm:py-24">
           <div className="mb-10 flex items-center gap-3">
             <span className="flex h-10 w-1 rounded-full bg-amber-500" />
@@ -119,7 +119,7 @@ export default function Home() {
       </section>
 
       {/* Acerca de Nosotros */}
-      <section className="border-t border-stone-200/80 bg-white dark:border-stone-700 dark:bg-stone-950">
+      <section className="border-t border-stone-200/80 bg-[#fffef8] dark:border-stone-700 dark:bg-stone-950">
         <div className="mx-auto max-w-4xl px-6 py-16 sm:py-24">
           <div className="mb-10 flex items-center gap-3">
             <span className="flex h-10 w-1 rounded-full bg-amber-500" />

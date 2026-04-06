@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { nombreSaludo } from '@/lib/nombreSaludo'
 
 const ROLES = [
   { value: 'administrador', label: 'Administrador' },
@@ -85,7 +86,19 @@ export default function Navbar() {
             Adopt Me
           </span>
         </Link>
-        <ul className="flex items-center gap-4 text-sm font-medium text-zinc-600 dark:text-zinc-400">
+        <div className="flex min-w-0 flex-1 items-center justify-end gap-3 sm:gap-4">
+          {usuario ? (
+            <p
+              className="hidden max-w-[min(14rem,40vw)] truncate text-sm text-zinc-600 dark:text-zinc-400 sm:block"
+              title={nombreSaludo(usuario)}
+            >
+              Hola,{' '}
+              <span className="font-semibold text-zinc-900 dark:text-white">
+                {nombreSaludo(usuario)}
+              </span>
+            </p>
+          ) : null}
+        <ul className="flex shrink-0 items-center gap-3 text-sm font-medium text-zinc-600 dark:text-zinc-400 sm:gap-4">
           <li>
             <Link
               href="/"
@@ -125,19 +138,21 @@ export default function Navbar() {
 
           {usuario ? (
             <>
-              <li>
-                <Link
-                  href={dashboardHref}
-                  className="transition-colors hover:text-zinc-900 dark:hover:text-white"
-                >
-                  Mi panel
-                </Link>
-              </li>
+              {rol !== 'empresa' && (
+                <li>
+                  <Link
+                    href={dashboardHref}
+                    className="transition-colors hover:text-zinc-900 dark:hover:text-white"
+                  >
+                    Mi panel
+                  </Link>
+                </li>
+              )}
               <li>
                 <button
                   type="button"
                   onClick={cerrarSesion}
-                  className="inline-flex items-center justify-center rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition-colors hover:bg-red-100 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200"
+                  className="inline-flex items-center justify-center rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-amber-700 dark:bg-amber-600 dark:text-white dark:hover:bg-amber-500"
                 >
                   Cerrar sesión
                 </button>
@@ -180,7 +195,7 @@ export default function Navbar() {
               <li>
                 <Link
                   href="/registro"
-                  className="inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700"
+                  className="inline-flex items-center justify-center rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-amber-700"
                 >
                   Registro
                 </Link>
@@ -188,6 +203,7 @@ export default function Navbar() {
             </>
           )}
         </ul>
+        </div>
       </nav>
     </header>
   )

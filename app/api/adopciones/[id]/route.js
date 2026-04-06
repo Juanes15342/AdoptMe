@@ -2,6 +2,14 @@ import { createServerSupabaseClient } from "@/lib/supabaseServer";
 
 const ESTADOS_VALIDOS = ["pendiente", "aprobado", "rechazado"];
 
+function getSearchParams(request) {
+  try {
+    return new URL(request.url).searchParams;
+  } catch {
+    return new URLSearchParams();
+  }
+}
+
 // PUT - actualizar estado de una solicitud (empresa)
 export async function PUT(request, { params }) {
   const supabase = createServerSupabaseClient();
@@ -33,5 +41,80 @@ export async function PUT(request, { params }) {
   }
 
   return Response.json(data, { status: 200 });
+}
+
+// DELETE - el adoptante cancela su propia solicitud (solo si está pendiente)
+export async function DELETE(request, { params }) {
+  const supabase = createServerSupabaseClient();
+  const { id } = await params;
+
+  let usuarioId = null;
+  try {
+    const body = await request.json();
+    usuarioId = body?.usuario_id ?? null;
+  } catch {
+    // body opcional
+  }
+  if (!usuarioId) {
+    try {
+      usuarioId = getSearchParams(request).get("usuario_id");
+    } catch {
+      usuarioId = null;
+    }
+  }
+
+  if (!usuarioId) {
+    return Response.json(
+      { error: "usuario_id es obligatorio" },
+      { status: 400, headers: { "Cache-Control": "no-store" } }
+    );
+  }
+
+  const { data: row, error: fetchErr } = await supabase
+    .from("solicitudes_adopcion")
+    .select("id, usuario_id, estado")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (fetchErr) {
+    return Response.json(
+      { error: fetchErr.message },
+      { status: 500, headers: { "Cache-Control": "no-store" } }
+    );
+  }
+  if (!row) {
+    return Response.json(
+      { error: "Solicitud no encontrada" },
+      { status: 404, headers: { "Cache-Control": "no-store" } }
+    );
+  }
+  if (String(row.usuario_id) !== String(usuarioId)) {
+    return Response.json(
+      { error: "No autorizado" },
+      { status: 403, headers: { "Cache-Control": "no-store" } }
+    );
+  }
+
+  const estado = String(row.estado ?? "").trim().toLowerCase();
+  if (estado !== "pendiente") {
+    return Response.json(
+      { error: "Solo se pueden cancelar solicitudes pendientes" },
+      { status: 400, headers: { "Cache-Control": "no-store" } }
+    );
+  }
+
+  const { error: delErr } = await supabase
+    .from("solicitudes_adopcion")
+    .delete()
+    .eq("id", id);
+
+  if (delErr) {
+    return Response.json(
+      { error: delErr.message },
+      { status: 500, headers: { "Cache-Control": "no-store" } }
+    );
+  }
+
+  return new Response(null, { status: 204, headers: { "Cache-Control": "no-store" } });
 }
 

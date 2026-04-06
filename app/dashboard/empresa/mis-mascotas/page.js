@@ -6,7 +6,7 @@ export default function MisMascotasPage() {
   const usuario = useMemo(() => {
     if (typeof window === 'undefined') return null
     try {
-      const stored = window.sessionStorage.getItem('adoptme_user')
+      const stored = window.localStorage.getItem('adoptme_user')
       return stored ? JSON.parse(stored) : null
     } catch {
       return null
@@ -120,7 +120,7 @@ export default function MisMascotasPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-3.5rem)] w-full bg-stone-50 dark:bg-zinc-950">
+    <div className="min-h-[calc(100vh-3.5rem)] w-full bg-background dark:bg-zinc-950">
       <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
         <h1 className="font-serif text-3xl font-bold text-stone-800 dark:text-stone-100">
           Mis mascotas

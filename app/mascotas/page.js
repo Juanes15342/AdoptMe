@@ -1,5 +1,5 @@
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
-import PetCard from "@/app/components/PetCards";
+import MascotasCatalogoCliente from "@/app/components/MascotasCatalogoCliente";
 
 const OWNER_CANDIDATE_COLUMNS = [
   "empresa_id",
@@ -94,7 +94,7 @@ export default async function MascotasPage() {
   }));
 
   return (
-    <div className="min-h-[calc(100vh-3.5rem)] w-full bg-stone-50 dark:bg-zinc-950">
+    <div className="min-h-[calc(100vh-3.5rem)] w-full bg-background dark:bg-zinc-950">
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
         <header className="mb-10">
           <h1 className="font-serif text-3xl font-bold text-stone-800 dark:text-stone-100 sm:text-4xl">
@@ -105,19 +105,7 @@ export default async function MascotasPage() {
           </p>
         </header>
 
-        {!mascotas?.length ? (
-          <p className="rounded-xl border border-stone-200 bg-white px-6 py-10 text-center text-stone-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-stone-400">
-            Aún no hay mascotas publicadas. Vuelve pronto.
-          </p>
-        ) : (
-          <ul className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {mascotasConEmpresa.map((m) => (
-              <li key={m.id}>
-                <PetCard mascota={m} />
-              </li>
-            ))}
-          </ul>
-        )}
+        <MascotasCatalogoCliente mascotas={mascotasConEmpresa} />
       </div>
     </div>
   );

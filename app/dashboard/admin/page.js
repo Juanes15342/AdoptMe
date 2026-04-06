@@ -5,7 +5,7 @@ import { useState } from 'react'
 export default function Page() {
   const [nombre] = useState(() => {
     try {
-      const stored = window.sessionStorage.getItem('adoptme_user')
+      const stored = window.localStorage.getItem('adoptme_user')
       if (!stored) return ''
       const usuario = JSON.parse(stored)
       return usuario?.nombre || ''
