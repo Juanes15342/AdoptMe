@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 
 const ROLES = [
@@ -11,6 +12,7 @@ const ROLES = [
 
 export default function RegisterPage({ onBack }) {
   const [username, setUsername] = useState('')
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [companyName, setCompanyName] = useState('')
@@ -44,6 +46,24 @@ export default function RegisterPage({ onBack }) {
       if (response.ok) {
         setMessage('Usuario registrado correctamente')
         console.log('usuario registrado:', data)
+
+        const usuario = {
+          id: data.id,
+          nombre: data.nombre,
+          email: data.email,
+          rol: data.tipo_cuenta?.nombre ?? role,
+        }
+
+        try {
+          localStorage.setItem('adoptme_user', JSON.stringify(usuario))
+        } catch {
+          // ignore storage errors
+        }
+
+        const rolUsuario = String(usuario.rol || '').toLowerCase()
+        if (rolUsuario === 'administrador') router.push('/dashboard/admin')
+        else if (rolUsuario === 'empresa') router.push('/dashboard/empresa')
+        else router.push('/dashboard/user')
       } else {
         setMessage(data.error || 'Error en el registro')
       }

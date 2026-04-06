@@ -37,7 +37,7 @@ export default function LoginPage() {
   // Si ya hay sesión guardada, redirigimos directamente a su dashboard
   useEffect(() => {
     try {
-      const stored = window.sessionStorage.getItem('adoptme_user')
+      const stored = localStorage.getItem('adoptme_user')
       if (stored) {
         const usuario = JSON.parse(stored)
         const rolUsuario = (usuario.rol || '').toLowerCase()
@@ -79,13 +79,11 @@ export default function LoginPage() {
       setMessage('Login exitoso')
       console.log('usuario logueado:', data.usuario)
 
-      // Guardar sesión temporal hasta recargar
       try {
-        window.sessionStorage.setItem('adoptme_user', JSON.stringify(data.usuario))
-        // Avisar a componentes (Navbar) sin recargar la página
+        localStorage.setItem('adoptme_user', JSON.stringify(data.usuario))
         window.dispatchEvent(new Event('adoptme-auth-changed'))
-      } catch (e) {
-        console.error('No se pudo guardar la sesión', e)
+      } catch {
+        // ignore storage errors
       }
 
       const rolUsuario = data.usuario.rol.toLowerCase()
