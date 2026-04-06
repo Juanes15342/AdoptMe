@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 const ROLES = [
   { value: 'administrador', label: 'Administrador' },
@@ -10,52 +11,63 @@ const ROLES = [
 ]
 
 export default function Navbar() {
+  const router = useRouter()
   const [openDropdown, setOpenDropdown] = useState(false)
   const [usuario, setUsuario] = useState(null)
   const dropdownRef = useRef(null)
 
   useEffect(() => {
-    const readUsuario = () => {
+    function readUsuario() {
       try {
-        const stored = window.sessionStorage.getItem('adoptme_user')
-        setUsuario(stored ? JSON.parse(stored) : null)
-      } catch (e) {
-        console.error('Error leyendo usuario almacenado', e)
+        const raw = localStorage.getItem('adoptme_user')
+        setUsuario(raw ? JSON.parse(raw) : null)
+      } catch {
         setUsuario(null)
       }
     }
 
-    // Cerrar dropdown al hacer click fuera
+    readUsuario()
+
+    function handleStorage(event) {
+      if (event.key === 'adoptme_user') readUsuario()
+    }
+    function handleAuthChanged() {
+      readUsuario()
+    }
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setOpenDropdown(false)
       }
     }
+
+    window.addEventListener('storage', handleStorage)
+    window.addEventListener('adoptme-auth-changed', handleAuthChanged)
     document.addEventListener('mousedown', handleClickOutside)
-
-    // Leer sesión guardada (si existe)
-    readUsuario()
-
-    // Actualizar al instante cuando haga login/logout (sin recargar)
-    window.addEventListener('adoptme-auth-changed', readUsuario)
-
-    // También cubrir cambios entre pestañas/ventanas
-    window.addEventListener('storage', readUsuario)
     return () => {
+      window.removeEventListener('storage', handleStorage)
+      window.removeEventListener('adoptme-auth-changed', handleAuthChanged)
       document.removeEventListener('mousedown', handleClickOutside)
-      window.removeEventListener('adoptme-auth-changed', readUsuario)
-      window.removeEventListener('storage', readUsuario)
     }
   }, [])
 
-  const handleLogout = () => {
+  const rol = String(usuario?.rol || '').toLowerCase()
+  const dashboardHref =
+    rol === 'administrador'
+      ? '/dashboard/admin'
+      : rol === 'empresa'
+        ? '/dashboard/empresa'
+        : '/dashboard/user'
+
+  function cerrarSesion() {
     try {
-      window.sessionStorage.removeItem('adoptme_user')
+      localStorage.removeItem('adoptme_user')
       window.dispatchEvent(new Event('adoptme-auth-changed'))
-    } catch (e) {
-      console.error('Error eliminando sesión', e)
+    } catch {
+      // ignore storage errors
     }
     setUsuario(null)
+    setOpenDropdown(false)
+    router.replace('/login')
   }
 
   return (
@@ -90,7 +102,6 @@ export default function Navbar() {
               Mascotas
             </Link>
           </li>
-
           {usuario?.rol?.toLowerCase?.() === 'empresa' && (
             <>
               <li>
@@ -112,8 +123,27 @@ export default function Navbar() {
             </>
           )}
 
-          {/* Si NO hay usuario, mostramos login/registro */}
-          {!usuario && (
+          {usuario ? (
+            <>
+              <li>
+                <Link
+                  href={dashboardHref}
+                  className="transition-colors hover:text-zinc-900 dark:hover:text-white"
+                >
+                  Mi panel
+                </Link>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={cerrarSesion}
+                  className="inline-flex items-center justify-center rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition-colors hover:bg-red-100 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200"
+                >
+                  Cerrar sesión
+                </button>
+              </li>
+            </>
+          ) : (
             <>
               <li className="relative" ref={dropdownRef}>
                 <button
@@ -150,28 +180,12 @@ export default function Navbar() {
               <li>
                 <Link
                   href="/registro"
-                  className="inline-flex items-center justify-center rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-amber-700"
+                  className="inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700"
                 >
                   Registro
                 </Link>
               </li>
             </>
-          )}
-
-          {/* Si hay usuario, mostramos saludo y botón salir */}
-          {usuario && (
-            <li className="flex items-center gap-3">
-              <span className="text-sm text-zinc-700 dark:text-zinc-200">
-                Hola, <span className="font-semibold">{usuario.nombre}</span>
-              </span>
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="inline-flex items-center justify-center rounded-md border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 bg-white hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-              >
-                Cerrar sesión
-              </button>
-            </li>
           )}
         </ul>
       </nav>
