@@ -47,6 +47,14 @@ export default function Navbar() {
               Inicio
             </Link>
           </li>
+          <li>
+            <Link
+              href="/mascotas"
+              className="transition-colors hover:text-zinc-900 dark:hover:text-white"
+            >
+              Mascotas
+            </Link>
+          </li>
           <li className="relative" ref={dropdownRef}>
             <button
               type="button"

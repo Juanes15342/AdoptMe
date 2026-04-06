@@ -29,9 +29,10 @@ export default function RegisterPage({ onBack }) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          nombre: email,
+          nombre: email.split("@")[0],
           email: email,
           password: password,
+          rol: role,
         }),
       })
 
@@ -74,7 +75,7 @@ export default function RegisterPage({ onBack }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="role">
-              Rol
+              Tipo de cuenta
             </label>
             <select
               id="role"
