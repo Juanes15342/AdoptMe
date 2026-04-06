@@ -53,12 +53,20 @@ export default function LoginPage() {
 
      const data = await response.json()
 
-     if (response.ok) {
-       setMessage('Login exitoso')
-       console.log('usuario logueado:', data.usuario)
+    if (response.ok) {
+  setMessage('Login exitoso')
+  console.log('usuario logueado:', data.usuario)
 
-       router.push('/')
-     } else {
+ const rolUsuario = data.usuario.rol.toLowerCase()
+
+if (rolUsuario === "administrador") {
+  router.push("/dashboard/admin")
+} else if (rolUsuario === "empresa") {
+  router.push("/dashboard/empresa")
+} else if (rolUsuario === "usuario") {
+  router.push("/dashboard/user")
+}
+} else {
        setMessage(data.error || 'Error en el login')
      }
    } catch (error) {
@@ -154,3 +162,4 @@ export default function LoginPage() {
     </div>
   )
 }
+
