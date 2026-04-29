@@ -1,19 +1,20 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export default function Page() {
-  const [nombre] = useState(() => {
+  const [nombre, setNombre] = useState('')
+
+  useEffect(() => {
     try {
       const stored = window.localStorage.getItem('adoptme_user')
-      if (!stored) return ''
+      if (!stored) return
       const usuario = JSON.parse(stored)
-      return usuario?.nombre || ''
+      setNombre(usuario?.nombre || '')
     } catch (e) {
       console.error('No se pudo leer la sesión del usuario', e)
-      return ''
     }
-  })
+  }, [])
 
   return (
     <div style={{ padding: '40px' }}>
