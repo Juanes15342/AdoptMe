@@ -133,6 +133,14 @@ export default function Navbar() {
                   Mis mascotas
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/dashboard/empresa/solicitudes"
+                  className="transition-colors hover:text-zinc-900 dark:hover:text-white"
+                >
+                  Solicitudes
+                </Link>
+              </li>
             </>
           )}
 
