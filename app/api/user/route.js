@@ -1,4 +1,8 @@
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
+import { isCrudTestMode } from "@/lib/isTestMode";
+import {
+  testUserCreate,
+} from "@/lib/crudTestStore";
 import bcrypt from "bcryptjs";
 
 const ROLES_TIPO_CUENTA = ["administrador", "empresa", "usuario"];
@@ -28,8 +32,17 @@ export async function GET() {
 
 // POST - Crear un usuario nuevo (asocia tipo de cuenta vía tabla tipo_cuenta)
 export async function POST(request) {
-    const supabase = createServerSupabaseClient();
     const body = await request.json();
+
+    if (isCrudTestMode(request)) {
+        const result = await testUserCreate(body);
+        if (result.error) {
+            return Response.json({ error: result.error }, { status: result.status });
+        }
+        return Response.json(result.data, { status: result.status });
+    }
+
+    const supabase = createServerSupabaseClient();
     const { email, password, nombre, rol, nombreEmpresa } = body;
 
     if (!email || !password) {

@@ -1,4 +1,9 @@
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
+import { isCrudTestMode } from "@/lib/isTestMode";
+import {
+  testAdopcionesCreate,
+  testAdopcionesList,
+} from "@/lib/crudTestStore";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -22,12 +27,34 @@ function supabaseErrorToJson(error) {
   };
 }
 
-// GET - listar solicitudes (opcionalmente filtrar por usuario_id / estado)
+const OWNER_CANDIDATE_COLUMNS = [
+  "empresa_id",
+  "empresa_usuario_id",
+  "usuario_id",
+  "owner_id",
+  "creado_por",
+];
+
+async function findOwnerColumn(supabase) {
+  for (const column of OWNER_CANDIDATE_COLUMNS) {
+    const { error } = await supabase.from("mascotas").select(`id, ${column}`).limit(1);
+    if (!error) return column;
+  }
+  return null;
+}
+
+// GET - listar solicitudes (opcionalmente filtrar por usuario_id / estado / empresa_id)
 export async function GET(request) {
+  if (isCrudTestMode(request)) {
+    const data = await testAdopcionesList();
+    return Response.json(data, { status: 200 });
+  }
+
   const supabase = createServerSupabaseClient();
   const searchParams = getSearchParams(request);
   const usuarioId = searchParams.get("usuario_id");
   const estado = searchParams.get("estado");
+  const empresaId = searchParams.get("empresa_id");
 
   let query = supabase
     .from("solicitudes_adopcion")
@@ -38,6 +65,31 @@ export async function GET(request) {
 
   if (usuarioId) query = query.eq("usuario_id", usuarioId);
   if (estado) query = query.eq("estado", estado);
+
+  if (empresaId) {
+    const ownerColumn = await findOwnerColumn(supabase);
+    if (ownerColumn) {
+      const { data: minePets, error: petsError } = await supabase
+        .from("mascotas")
+        .select("id")
+        .eq(ownerColumn, empresaId);
+
+      if (petsError) {
+        console.error("[api/adopciones][GET] error fetching company pets:", petsError);
+      }
+
+      const petIds = (minePets ?? []).map((p) => p.id);
+      if (petIds.length > 0) {
+        query = query.in("mascota_id", petIds);
+      } else {
+        // La empresa no tiene mascotas, devolver vacío
+        return Response.json([], {
+          status: 200,
+          headers: { "Cache-Control": "no-store" },
+        });
+      }
+    }
+  }
 
   const { data, error } = await query;
 
@@ -60,7 +112,6 @@ export async function GET(request) {
 
 // POST - crear solicitud (por defecto queda en "pendiente")
 export async function POST(request) {
-  const supabase = createServerSupabaseClient();
   let body = null;
   try {
     body = await request.json();
@@ -68,6 +119,16 @@ export async function POST(request) {
     console.error("[api/adopciones][POST] Invalid JSON body:", e);
     return Response.json({ error: { message: "Body JSON inválido" } }, { status: 400 });
   }
+
+  if (isCrudTestMode(request)) {
+    const result = await testAdopcionesCreate(body);
+    if (result.error) {
+      return Response.json({ error: result.error }, { status: result.status });
+    }
+    return Response.json(result.data, { status: result.status });
+  }
+
+  const supabase = createServerSupabaseClient();
 
   const {
     usuario_id: usuarioId,
