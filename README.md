@@ -1,40 +1,50 @@
-<<<<<<< HEAD
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+AdoptMe – Documentación del proyecto
 
-## Getting Started
+Plataforma web para facilitar la adopción responsable de mascotas, conectando empresas/casas de adopción con adoptantes.
 
-First, run the development server:
+Equipo
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+RolPersonaProduct OwnerDarly ZambranoScrum MasterEsteban HenaoDev TeamEstiven Cataño, Andrés Narváez, Samuel Guarín
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Stack tecnológico
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Frontend / SSR: Next.js
+Base de datos: Supabase
+Autenticación: JWT
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Índice de documentación
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Épicas
 
-## Deploy on Vercel
+IDNombreEstadoEP-001Login y gestión de acceso ImplementadaEP-002Gestión de formularios de adopción ImplementadaEP-003Gestión de animales y catálogo ParcialEP-004Panel de administración Pendiente
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Historias de usuario
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-=======
-# PrimerSprint
->>>>>>> 3dab72f16776428ebd53a790e2e68fe607ed1d20
+
+EP-001 – Autenticación
+EP-002 – Formularios de adopción
+EP-003 – Gestión de animales
+EP-004 – Panel de administración
+
+
+Documentación técnica
+
+DocumentoDescripciónArquitectura y base de datosConfiguración de Supabase, tablas y APISeguridadAutenticación JWT y control de acceso por rolesFrontendDiseño de interfaz y diseño responsivo
+
+
+Estado general del backlog
+
+EP-001  ████████████████████  100%  
+EP-002  ████████████████████  100%  
+EP-003  ████████████░░░░░░░░   60%  
+EP-004  ░░░░░░░░░░░░░░░░░░░░    0%  
+
+Convenciones de este repositorio
+
+
+Las historias de usuario documentan qué necesita el usuario y sus criterios de aceptación.
+Las decisiones de implementación (endpoints, tablas, lógica) viven en /tecnico.
+Cada historia tiene su propio archivo para facilitar el seguimiento individual.
