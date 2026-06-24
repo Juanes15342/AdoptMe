@@ -1,4 +1,9 @@
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
+import { isCrudTestMode } from "@/lib/isTestMode";
+import {
+  testMascotasCreate,
+  testMascotasList,
+} from "@/lib/crudTestStore";
 
 const OWNER_CANDIDATE_COLUMNS = [
   "empresa_id",
@@ -30,6 +35,11 @@ async function findCompanyNameColumnInMascotas(supabase) {
 }
 
 export async function GET(request) {
+  if (isCrudTestMode(request)) {
+    const data = await testMascotasList();
+    return Response.json(data, { status: 200 });
+  }
+
   const supabase = createServerSupabaseClient();
   const ownerColumn = await findOwnerColumn(supabase);
   const companyColumn = await findCompanyNameColumnInMascotas(supabase);
@@ -74,11 +84,20 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
+  const body = await request.json();
+
+  if (isCrudTestMode(request)) {
+    const result = await testMascotasCreate(body);
+    if (result.error) {
+      return Response.json({ error: result.error }, { status: result.status });
+    }
+    return Response.json(result.data, { status: result.status });
+  }
+
   const supabase = createServerSupabaseClient();
   const ownerColumn = await findOwnerColumn(supabase);
   const companyColumn = await findCompanyNameColumnInMascotas(supabase);
 
-  const body = await request.json();
   const {
     nombre,
     especie,
