@@ -2,7 +2,7 @@
 
 ## EP-001 – Login y gestión de acceso
 
-**Estado:** Parcial (90%)
+**Estado:** Terminado
 
 **Prioridad:** Alta
 
@@ -19,7 +19,7 @@ Permite que clientes, empresas y administradores se registren, inicien sesión y
 | HU-001 | Registro de usuario  | Alta      | 5 pts  | Terminado |
 | HU-002 | Inicio de sesión     | Alta      | 5 pts  | Terminado |
 | HU-019 | Cerrar sesión        | Alta      | 2 pts  | Terminado |
-| HU-020 | Recuperar contraseña | Alta      | 5 pts  | Pendiente |
+| HU-020 | Recuperar contraseña | Alta      | 5 pts  | Terminado (Oculto en UI) |
 
 ### Criterios de aceptación de la épica
 

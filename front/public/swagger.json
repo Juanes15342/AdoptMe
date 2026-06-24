@@ -1,0 +1,726 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "AdoptMe API Documentation",
+    "description": "Especificación interactiva de los endpoints de la plataforma de adopción de mascotas AdoptMe. Incluye gestión de usuarios, roles, catálogo de mascotas y solicitudes de adopción.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Servidor de desarrollo local"
+    }
+  ],
+  "paths": {
+    "/api/auth": {
+      "post": {
+        "summary": "Iniciar sesión (Login)",
+        "description": "Autentica a un usuario mediante correo electrónico, contraseña y rol esperado.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "usuario@test.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "password123"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": ["usuario", "empresa", "administrador"],
+                    "example": "usuario"
+                  }
+                },
+                "required": ["email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Autenticación exitosa",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Login exitoso" },
+                    "usuario": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "string", "format": "uuid" },
+                        "nombre": { "type": "string", "example": "Juan Pérez" },
+                        "email": { "type": "string", "format": "email" },
+                        "rol": { "type": "string", "example": "usuario" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos faltantes en la solicitud"
+          },
+          "401": {
+            "description": "Credenciales inválidas o conflicto de rol"
+          },
+          "404": {
+            "description": "Usuario no encontrado"
+          }
+        }
+      }
+    },
+    "/api/auth/reset-password": {
+      "post": {
+        "summary": "Gestión de recuperación de contraseña",
+        "description": "Maneja el flujo de 'Olvidé mi contraseña' (solicitud de código, verificación de código y restablecimiento de contraseña).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "juanes15342@gmail.com"
+                  },
+                  "action": {
+                    "type": "string",
+                    "enum": ["request", "verify", "reset"],
+                    "example": "request"
+                  },
+                  "code": {
+                    "type": "string",
+                    "description": "Código de 6 dígitos (Requerido para 'verify' y 'reset')",
+                    "example": "123456"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "description": "Nueva contraseña (Requerido para 'reset')",
+                    "example": "nuevapassword123"
+                  }
+                },
+                "required": ["email", "action"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Operación exitosa",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Código de recuperación enviado" },
+                    "devCode": { "type": "string", "description": "Código generado (Disponible solo en desarrollo)", "example": "123456" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Código incorrecto, expirado o contraseña no cumple con los requisitos de longitud"
+          },
+          "404": {
+            "description": "Correo electrónico no registrado"
+          }
+        }
+      }
+    },
+    "/api/user": {
+      "get": {
+        "summary": "Obtener todos los usuarios",
+        "description": "Retorna un listado de todos los usuarios registrados en el sistema.",
+        "responses": {
+          "200": {
+            "description": "Listado de usuarios obtenido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Usuario"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno del servidor"
+          }
+        }
+      },
+      "post": {
+        "summary": "Registrar un usuario nuevo",
+        "description": "Crea una nueva cuenta de usuario (usuario común o empresa).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string", "format": "email", "example": "ejemplo@correo.com" },
+                  "password": { "type": "string", "format": "password", "example": "password123" },
+                  "nombre": { "type": "string", "example": "Juan Pérez" },
+                  "rol": { "type": "string", "enum": ["usuario", "empresa"], "example": "usuario" },
+                  "nombreEmpresa": { "type": "string", "description": "Requerido si rol es 'empresa'", "example": "Refugio Patitas" }
+                },
+                "required": ["email", "password", "rol"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usuario registrado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Usuario"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parámetros obligatorios faltantes o tipo de cuenta no válido"
+          },
+          "409": {
+            "description": "El correo electrónico ya está registrado"
+          }
+        }
+      }
+    },
+    "/api/user/{id}": {
+      "get": {
+        "summary": "Obtener usuario por ID",
+        "description": "Retorna la información completa de un usuario específico.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID único del usuario",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuario encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Usuario"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Usuario no encontrado"
+          }
+        }
+      },
+      "put": {
+        "summary": "Actualizar usuario",
+        "description": "Actualiza la información de perfil (nombre, correo) de un usuario.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID único del usuario",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nombre": { "type": "string", "example": "Juan Modificado" },
+                  "email": { "type": "string", "format": "email", "example": "nuevo@correo.com" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Usuario actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Usuario"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "El email que intenta usar ya está en uso por otra cuenta"
+          },
+          "404": {
+            "description": "Usuario no encontrado"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Eliminar usuario",
+        "description": "Elimina la cuenta del usuario de la plataforma.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID único del usuario",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuario eliminado correctamente"
+          },
+          "404": {
+            "description": "Usuario no encontrado"
+          }
+        }
+      }
+    },
+    "/api/mascotas": {
+      "get": {
+        "summary": "Listar mascotas",
+        "description": "Retorna la lista de mascotas registradas. Puede filtrarse para obtener solo las de una empresa específica.",
+        "parameters": [
+          {
+            "name": "mine",
+            "in": "query",
+            "description": "Flag para filtrar las mascotas de la empresa autenticada ('1')",
+            "required": false,
+            "schema": { "type": "string", "example": "1" }
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "description": "ID de la empresa para filtrar si mine es '1'",
+            "required": false,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "rol",
+            "in": "query",
+            "description": "Rol del usuario que realiza la consulta ('empresa')",
+            "required": false,
+            "schema": { "type": "string", "example": "empresa" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de mascotas obtenida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Mascota"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Publicar una mascota",
+        "description": "Registra una nueva mascota disponible para adopción (Rol Empresa).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nombre": { "type": "string", "example": "Max" },
+                  "especie": { "type": "string", "enum": ["perro", "gato"], "example": "perro" },
+                  "raza": { "type": "string", "example": "Pastor Alemán" },
+                  "edad": { "type": "integer", "example": 2 },
+                  "descripcion": { "type": "string", "example": "Muy juguetón y cariñoso." },
+                  "estado": { "type": "string", "enum": ["disponible", "adoptada"], "default": "disponible" }
+                },
+                "required": ["nombre", "especie"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Mascota creada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mascota"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Nombre obligatorio o especie no válida"
+          }
+        }
+      }
+    },
+    "/api/mascotas/{id}": {
+      "get": {
+        "summary": "Obtener mascota por ID",
+        "description": "Retorna los detalles de una mascota específica.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID único de la mascota",
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalles de mascota obtenidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mascota"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Mascota no encontrada"
+          }
+        }
+      },
+      "put": {
+        "summary": "Actualizar mascota",
+        "description": "Modifica la información de una mascota (Rol Empresa).",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID de la mascota a actualizar",
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nombre": { "type": "string", "example": "Max Actualizado" },
+                  "edad": { "type": "integer", "example": 3 },
+                  "especie": { "type": "string", "example": "perro" },
+                  "raza": { "type": "string", "example": "Pastor Alemán" },
+                  "descripcion": { "type": "string", "example": "Sigue buscando hogar." },
+                  "estado": { "type": "string", "example": "disponible" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Mascota actualizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mascota"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Solicitud vacía o campos incorrectos"
+          },
+          "404": {
+            "description": "Mascota no encontrada"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Eliminar mascota",
+        "description": "Elimina a una mascota del catálogo.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID de la mascota",
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Mascota eliminada correctamente"
+          },
+          "404": {
+            "description": "Mascota no encontrada"
+          }
+        }
+      }
+    },
+    "/api/adopciones": {
+      "get": {
+        "summary": "Listar solicitudes de adopción",
+        "description": "Obtiene la lista de postulaciones. Permite filtrar las postulaciones de un usuario específico.",
+        "parameters": [
+          {
+            "name": "usuario_id",
+            "in": "query",
+            "description": "ID del usuario cliente para filtrar sus propias solicitudes",
+            "required": false,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de solicitudes obtenida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Adopcion"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Enviar una solicitud de adopción",
+        "description": "Crea una postulación de un cliente para adoptar a una mascota disponible.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mascota_id": { "type": "string", "format": "uuid", "example": "5411a704-08de-433e-b8de-94dc281e0574" },
+                  "usuario_id": { "type": "string", "format": "uuid", "example": "dd906b48-0afe-4c59-b9dd-300ffcaa169d" },
+                  "mensaje": { "type": "string", "example": "Prometo cuidarla muy bien y darle mucho cariño." }
+                },
+                "required": ["mascota_id", "usuario_id"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Solicitud creada con éxito",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Adopcion"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "mascota_id y usuario_id son requeridos"
+          },
+          "409": {
+            "description": "Ya existe una postulación activa (pendiente o aprobada) para esta mascota"
+          }
+        }
+      }
+    },
+    "/api/adopciones/{id}": {
+      "get": {
+        "summary": "Obtener solicitud de adopción por ID",
+        "description": "Obtiene la información de una solicitud de adopción específica.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID único de la solicitud de adopción",
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Solicitud obtenida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Adopcion"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Solicitud no encontrada"
+          }
+        }
+      },
+      "put": {
+        "summary": "Actualizar estado de solicitud (Aprobar/Rechazar)",
+        "description": "Permite a la empresa actualizar el estado de una solicitud recibida.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID de la solicitud a actualizar",
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "estado": { "type": "string", "enum": ["pendiente", "aprobada", "rechazada"], "example": "aprobada" }
+                },
+                "required": ["estado"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estado actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Adopcion"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Estado inválido o no suministrado"
+          },
+          "404": {
+            "description": "Solicitud de adopción no encontrada"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Eliminar solicitud",
+        "description": "Elimina una postulación de adopción.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID de la solicitud",
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Eliminado con éxito (Sin contenido)"
+          },
+          "404": {
+            "description": "Solicitud no encontrada"
+          }
+        }
+      }
+    },
+    "/api/adopciones/empresa": {
+      "get": {
+        "summary": "Listar solicitudes recibidas por empresa",
+        "description": "Retorna todas las postulaciones asociadas a las mascotas publicadas por una empresa específica.",
+        "parameters": [
+          {
+            "name": "empresa_id",
+            "in": "query",
+            "description": "ID único de la empresa/refugio",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de solicitudes de la empresa obtenida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Adopcion"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Usuario": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "nombre": { "type": "string", "example": "Refugio San Roque" },
+          "email": { "type": "string", "format": "email", "example": "sanroque@empresa.com" },
+          "tipo_cuenta_id": { "type": "string", "format": "uuid" },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Mascota": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "nombre": { "type": "string", "example": "Luna" },
+          "especie": { "type": "string", "example": "gato" },
+          "raza": { "type": "string", "example": "Siames" },
+          "edad": { "type": "integer", "example": 1 },
+          "descripcion": { "type": "string", "example": "Muy mimosa." },
+          "estado": { "type": "string", "example": "disponible" }
+        }
+      },
+      "Adopcion": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "mascota_id": { "type": "string", "format": "uuid" },
+          "usuario_id": { "type": "string", "format": "uuid" },
+          "estado": { "type": "string", "example": "pendiente" },
+          "mensaje": { "type": "string", "example": "Mensaje de postulación" }
+        }
+      }
+    }
+  }
+}

@@ -1,42 +1,14 @@
 {
-  "name": "adoptme",
-  "version": "0.1.0",
+  "name": "adoptme-project",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack",
-    "dev:test": "cross-env CRUD_TEST_MODE=1 next dev --webpack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
-    "test": "cross-env CRUD_TEST_MODE=1 jest"
-  },
-  "jest": {
-    "testEnvironment": "node",
-    "testMatch": [
-      "**/__tests__/**/*.test.js"
-    ],
-    "globalSetup": "./jest.globalSetup.js",
-    "globalTeardown": "./jest.globalTeardown.js",
-    "testTimeout": 30000
-  },
-  "dependencies": {
-    "@supabase/supabase-js": "^2.99.0",
-    "bcryptjs": "^3.0.3",
-    "next": "16.1.6",
-    "react": "19.2.3",
-    "react-dom": "19.2.3"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/estree": "^1.0.8",
-    "@types/json-schema": "^7.0.15",
-    "@types/node": "^25.4.0",
-    "cross-env": "^10.1.0",
-    "eslint": "^9",
-    "eslint-config-next": "16.1.6",
-    "jest": "^29.0.0",
-    "jest-environment-node": "^29.0.0",
-    "node-fetch": "^2.7.0",
-    "tailwindcss": "^4"
+    "dev": "node dev.js",
+    "dev:front": "npm run dev --prefix front",
+    "dev:back": "npm run dev --prefix back",
+    "test": "npm test --prefix back",
+    "install:front": "npm install --prefix front",
+    "install:back": "npm install --prefix back",
+    "install:all": "npm run install:front && npm run install:back"
   }
 }
