@@ -3,6 +3,28 @@
 import { useCallback, useMemo, useState, useEffect } from 'react'
 import Link from 'next/link'
 
+const ESTADOS_FILTER = [
+  { value: 'pendiente', label: 'Pendientes' },
+  { value: 'aprobado', label: 'Aprobadas' },
+  { value: 'rechazado', label: 'Rechazadas' },
+  { value: 'todas', label: 'Todas' },
+]
+
+function formatFecha(isoString) {
+  if (!isoString) return '—'
+  try {
+    return new Date(isoString).toLocaleDateString('es-CO', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  } catch {
+    return isoString
+  }
+}
+
 export default function EmpresaSolicitudesPage() {
   const usuario = useMemo(() => {
     if (typeof window === 'undefined') return null
@@ -30,7 +52,17 @@ export default function EmpresaSolicitudesPage() {
         setMessage(data?.error?.message || 'No se pudieron cargar las solicitudes')
         return
       }
-      setSolicitudes(Array.isArray(data) ? data : [])
+      
+      const solicitudesMapeadas = (Array.isArray(data) ? data : []).map((sol) => ({
+        ...sol,
+        estado:
+          sol.estado === 'aprobada'
+            ? 'aprobado'
+            : sol.estado === 'rechazada'
+            ? 'rechazado'
+            : sol.estado,
+      }))
+      setSolicitudes(solicitudesMapeadas)
     } catch (err) {
       console.error(err)
       setMessage('Error de conexión cargando las solicitudes')
@@ -48,7 +80,6 @@ export default function EmpresaSolicitudesPage() {
       }
       loadSolicitudes()
     } else {
-      // Si no hay sesión, esperar un momento
       const timer = setTimeout(() => {
         if (!window.localStorage.getItem('adoptme_user')) {
           setMessage('Por favor, inicia sesión para ver este panel.')
@@ -77,7 +108,11 @@ export default function EmpresaSolicitudesPage() {
       setSolicitudes((prev) =>
         prev.map((s) => (s.id === id ? { ...s, estado: newStatus } : s))
       )
-      setMessage(`Solicitud de adopción ${newStatus === 'aprobado' ? 'aprobada' : 'rechazada'} con éxito.`)
+      setMessage(
+        `Solicitud de adopción cambiada a ${
+          newStatus === 'aprobado' ? 'aprobada' : newStatus === 'rechazado' ? 'rechazada' : 'pendiente'
+        } con éxito.`
+      )
     } catch (err) {
       console.error(err)
       setMessage('Error al actualizar el estado de la solicitud')
@@ -117,12 +152,25 @@ export default function EmpresaSolicitudesPage() {
     <div className="min-h-[calc(100vh-3.5rem)] w-full bg-stone-50/50 dark:bg-zinc-950">
       <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
         <header className="mb-8">
-          <h1 className="font-serif text-3xl font-bold text-stone-800 dark:text-stone-100 sm:text-4xl">
-            Solicitudes de Adopción
-          </h1>
-          <p className="mt-2 text-stone-600 dark:text-stone-400">
-            Revisa y verifica la información de los adoptantes para garantizar la seguridad de los animales.
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h1 className="font-serif text-3xl font-bold text-stone-800 dark:text-stone-100 sm:text-4xl">
+                Solicitudes de Adopción
+              </h1>
+              <p className="mt-2 text-stone-600 dark:text-stone-400">
+                Revisa y verifica la información de los adoptantes para garantizar la seguridad de los animales.
+              </p>
+            </div>
+            <Link
+              href="/dashboard/empresa"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 shadow-sm transition hover:bg-stone-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-stone-200 dark:hover:bg-zinc-800"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Volver al panel
+            </Link>
+          </div>
         </header>
 
         {message && (
@@ -146,17 +194,12 @@ export default function EmpresaSolicitudesPage() {
           <>
             {/* Tabs de Filtro */}
             <div className="mb-6 flex flex-wrap gap-2 border-b border-stone-200 pb-2 dark:border-zinc-800">
-              {[
-                { id: 'pendiente', label: 'Pendientes', count: counts.pendiente },
-                { id: 'aprobado', label: 'Aprobadas', count: counts.aprobado },
-                { id: 'rechazado', label: 'Rechazadas', count: counts.rechazado },
-                { id: 'todas', label: 'Todas', count: counts.todas },
-              ].map((tab) => (
+              {ESTADOS_FILTER.map((tab) => (
                 <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  key={tab.value}
+                  onClick={() => setActiveTab(tab.value)}
                   className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
-                    activeTab === tab.id
+                    activeTab === tab.value
                       ? 'bg-amber-600 text-white shadow-sm'
                       : 'bg-white text-stone-600 hover:bg-stone-100 hover:text-stone-800 dark:bg-zinc-900 dark:text-stone-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200'
                   }`}
@@ -164,12 +207,12 @@ export default function EmpresaSolicitudesPage() {
                   {tab.label}
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs ${
-                      activeTab === tab.id
+                      activeTab === tab.value
                         ? 'bg-amber-500 text-white'
                         : 'bg-stone-100 text-stone-700 dark:bg-zinc-800 dark:text-zinc-300'
                     }`}
                   >
-                    {tab.count}
+                    {counts[tab.value] ?? counts.todas}
                   </span>
                 </button>
               ))}
@@ -183,7 +226,7 @@ export default function EmpresaSolicitudesPage() {
                 </svg>
                 <h3 className="mt-4 text-lg font-semibold text-stone-700 dark:text-stone-300">No hay solicitudes</h3>
                 <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
-                  No se encontraron solicitudes en la categoría "{activeTab === 'todas' ? 'Todas' : activeTab === 'pendiente' ? 'Pendientes' : activeTab === 'aprobado' ? 'Aprobadas' : 'Rechazadas'}".
+                  No se encontraron solicitudes en la categoría "{ESTADOS_FILTER.find((f) => f.value === activeTab)?.label}".
                 </p>
               </div>
             ) : (
@@ -278,6 +321,12 @@ export default function EmpresaSolicitudesPage() {
                               {sol.direccion || 'No proporcionada'}
                             </span>
                           </div>
+                          <div className="sm:col-span-2">
+                            <span className="font-medium text-stone-500 dark:text-zinc-500">Fecha de envío:</span>{' '}
+                            <span className="text-stone-600 dark:text-stone-400">
+                              {formatFecha(sol.created_at)}
+                            </span>
+                          </div>
                         </div>
 
                         {sol.mensaje && (
@@ -292,32 +341,43 @@ export default function EmpresaSolicitudesPage() {
                         )}
                       </div>
 
-                      {/* Botones de acción (Solo para pendientes) */}
-                      {sol.estado === 'pendiente' && (
-                        <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-stone-100 pt-4 dark:border-zinc-800">
+                      {/* Botones de acción */}
+                      <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-stone-100 pt-4 dark:border-zinc-800">
+                        {sol.estado === 'pendiente' ? (
+                          <>
+                            <button
+                              type="button"
+                              disabled={updatingId !== null}
+                              onClick={() => handleUpdateStatus(sol.id, 'aprobado')}
+                              className="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
+                            >
+                              Aprobar Adopción
+                            </button>
+                            <button
+                              type="button"
+                              disabled={updatingId !== null}
+                              onClick={() => handleUpdateStatus(sol.id, 'rechazado')}
+                              className="inline-flex items-center justify-center rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-100 dark:border-red-950 dark:bg-red-950/20 dark:text-red-300 disabled:opacity-60"
+                            >
+                              Rechazar
+                            </button>
+                          </>
+                        ) : (
                           <button
                             type="button"
                             disabled={updatingId !== null}
-                            onClick={() => handleUpdateStatus(sol.id, 'aprobado')}
-                            className="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
+                            onClick={() => handleUpdateStatus(sol.id, 'pendiente')}
+                            className="inline-flex items-center justify-center rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 shadow-sm transition hover:bg-stone-50 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-stone-200 dark:hover:bg-zinc-800"
                           >
-                            Aprobar Adopción
+                            Volver a Pendiente
                           </button>
-                          <button
-                            type="button"
-                            disabled={updatingId !== null}
-                            onClick={() => handleUpdateStatus(sol.id, 'rechazado')}
-                            className="inline-flex items-center justify-center rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-100 dark:border-red-950 dark:bg-red-950/20 dark:text-red-300 disabled:opacity-60"
-                          >
-                            Rechazar
-                          </button>
-                          {updatingId === sol.id && (
-                            <span className="text-xs text-stone-500 dark:text-stone-400 animate-pulse">
-                              Guardando cambios...
-                            </span>
-                          )}
-                        </div>
-                      )}
+                        )}
+                        {updatingId === sol.id && (
+                          <span className="text-xs text-stone-500 dark:text-stone-400 animate-pulse">
+                            Guardando cambios...
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
