@@ -1,4 +1,9 @@
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
+import { isCrudTestMode } from "@/lib/isTestMode";
+import {
+  testAdopcionesCreate,
+  testAdopcionesList,
+} from "@/lib/crudTestStore";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -24,6 +29,11 @@ function supabaseErrorToJson(error) {
 
 // GET - listar solicitudes (opcionalmente filtrar por usuario_id / estado)
 export async function GET(request) {
+  if (isCrudTestMode(request)) {
+    const data = await testAdopcionesList();
+    return Response.json(data, { status: 200 });
+  }
+
   const supabase = createServerSupabaseClient();
   const searchParams = getSearchParams(request);
   const usuarioId = searchParams.get("usuario_id");
@@ -60,7 +70,6 @@ export async function GET(request) {
 
 // POST - crear solicitud (por defecto queda en "pendiente")
 export async function POST(request) {
-  const supabase = createServerSupabaseClient();
   let body = null;
   try {
     body = await request.json();
@@ -68,6 +77,16 @@ export async function POST(request) {
     console.error("[api/adopciones][POST] Invalid JSON body:", e);
     return Response.json({ error: { message: "Body JSON inválido" } }, { status: 400 });
   }
+
+  if (isCrudTestMode(request)) {
+    const result = await testAdopcionesCreate(body);
+    if (result.error) {
+      return Response.json({ error: result.error }, { status: result.status });
+    }
+    return Response.json(result.data, { status: result.status });
+  }
+
+  const supabase = createServerSupabaseClient();
 
   const {
     usuario_id: usuarioId,

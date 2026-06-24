@@ -1,6 +1,12 @@
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
+import { isCrudTestMode } from "@/lib/isTestMode";
+import {
+  testAdopcionesDelete,
+  testAdopcionesGetById,
+  testAdopcionesUpdate,
+} from "@/lib/crudTestStore";
 
-const ESTADOS_VALIDOS = ["pendiente", "aprobado", "rechazado"];
+const ESTADOS_VALIDOS = ["pendiente", "aprobado", "rechazado", "aprobada", "rechazada"];
 
 function getSearchParams(request) {
   try {
@@ -10,11 +16,45 @@ function getSearchParams(request) {
   }
 }
 
+export async function GET(request, { params }) {
+  const { id } = await params;
+
+  if (isCrudTestMode(request)) {
+    const result = await testAdopcionesGetById(id);
+    if (result.error) {
+      return Response.json({ error: result.error }, { status: result.status });
+    }
+    return Response.json(result.data, { status: result.status });
+  }
+
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("solicitudes_adopcion")
+    .select("id, estado, created_at, mensaje, telefono, direccion, usuario_id, mascota_id")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error || !data) {
+    return Response.json({ error: "Solicitud no encontrada" }, { status: 404 });
+  }
+
+  return Response.json(data, { status: 200 });
+}
+
 // PUT - actualizar estado de una solicitud (empresa)
 export async function PUT(request, { params }) {
-  const supabase = createServerSupabaseClient();
   const { id } = await params;
   const body = await request.json();
+
+  if (isCrudTestMode(request)) {
+    const result = await testAdopcionesUpdate(id, body);
+    if (result.error) {
+      return Response.json({ error: result.error }, { status: result.status });
+    }
+    return Response.json(result.data, { status: result.status });
+  }
+
+  const supabase = createServerSupabaseClient();
   const { estado } = body ?? {};
 
   const estadoNormalizado =
@@ -45,8 +85,17 @@ export async function PUT(request, { params }) {
 
 // DELETE - el adoptante cancela su propia solicitud (solo si está pendiente)
 export async function DELETE(request, { params }) {
-  const supabase = createServerSupabaseClient();
   const { id } = await params;
+
+  if (isCrudTestMode(request)) {
+    const result = await testAdopcionesDelete(id);
+    if (result.error) {
+      return Response.json({ error: result.error }, { status: result.status });
+    }
+    return new Response(null, { status: result.status });
+  }
+
+  const supabase = createServerSupabaseClient();
 
   let usuarioId = null;
   try {

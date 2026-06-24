@@ -1,9 +1,24 @@
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
+import { isCrudTestMode } from "@/lib/isTestMode";
+import {
+  testUserDelete,
+  testUserGetById,
+  testUserUpdate,
+} from "@/lib/crudTestStore";
 
 // GET - Obtener un usuario por ID
 export async function GET(request, { params }) {
-    const supabase = createServerSupabaseClient();
     const { id } = await params;
+
+    if (isCrudTestMode(request)) {
+        const result = await testUserGetById(id);
+        if (result.error) {
+            return Response.json({ error: result.error }, { status: result.status });
+        }
+        return Response.json(result.data, { status: result.status });
+    }
+
+    const supabase = createServerSupabaseClient();
 
     const { data, error } = await supabase
         .from('usuarios')
@@ -19,9 +34,18 @@ export async function GET(request, { params }) {
 
 // PUT - Actualizar un usuario
 export async function PUT(request, { params }) {
-    const supabase = createServerSupabaseClient();
     const { id } = await params;
     const body = await request.json();
+
+    if (isCrudTestMode(request)) {
+        const result = await testUserUpdate(id, body);
+        if (result.error) {
+            return Response.json({ error: result.error }, { status: result.status });
+        }
+        return Response.json(result.data, { status: result.status });
+    }
+
+    const supabase = createServerSupabaseClient();
 
     const { data, error } = await supabase
         .from('usuarios')
@@ -37,8 +61,17 @@ export async function PUT(request, { params }) {
 
 // DELETE - Eliminar un usuario
 export async function DELETE(request, { params }) {
-    const supabase = createServerSupabaseClient();
     const { id } = await params;
+
+    if (isCrudTestMode(request)) {
+        const result = await testUserDelete(id);
+        if (result.error) {
+            return Response.json({ error: result.error }, { status: result.status });
+        }
+        return new Response(null, { status: result.status });
+    }
+
+    const supabase = createServerSupabaseClient();
 
     const { error } = await supabase
         .from('usuarios')

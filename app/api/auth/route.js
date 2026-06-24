@@ -1,10 +1,22 @@
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
 import bcrypt from "bcryptjs";
+import { isCrudTestMode } from "@/lib/isTestMode";
+import { testAuthLogin } from "@/lib/crudTestStore";
 
 // POST - Login
 export async function POST(request) {
+    const body = await request.json();
+
+    if (isCrudTestMode(request)) {
+        const result = await testAuthLogin(body);
+        if (result.error) {
+            return Response.json({ error: result.error }, { status: result.status });
+        }
+        return Response.json(result.data, { status: result.status });
+    }
+
     const supabase = createServerSupabaseClient();
-    const { email, password } = await request.json();
+    const { email, password } = body;
 
     // 1. Buscar el usuario por email
     const { data: usuario, error } = await supabase

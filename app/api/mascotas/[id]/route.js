@@ -1,4 +1,10 @@
 import { createServerSupabaseClient } from "@/lib/supabaseServer";
+import { isCrudTestMode } from "@/lib/isTestMode";
+import {
+  testMascotasDelete,
+  testMascotasGetById,
+  testMascotasUpdate,
+} from "@/lib/crudTestStore";
 
 const OWNER_CANDIDATE_COLUMNS = [
   "empresa_id",
@@ -20,10 +26,44 @@ async function findOwnerColumn(supabase) {
   return null;
 }
 
-export async function PUT(request, { params }) {
+export async function GET(request, { params }) {
+  const { id } = await params;
+
+  if (isCrudTestMode(request)) {
+    const result = await testMascotasGetById(id);
+    if (result.error) {
+      return Response.json({ error: result.error }, { status: result.status });
+    }
+    return Response.json(result.data, { status: result.status });
+  }
+
   const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("mascotas")
+    .select("id, nombre, especie, raza, edad, descripcion, foto_url, disponible, created_at")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error || !data) {
+    return Response.json({ error: "Mascota no encontrada." }, { status: 404 });
+  }
+
+  return Response.json(data, { status: 200 });
+}
+
+export async function PUT(request, { params }) {
   const { id } = await params;
   const body = await request.json();
+
+  if (isCrudTestMode(request)) {
+    const result = await testMascotasUpdate(id, body);
+    if (result.error) {
+      return Response.json({ error: result.error }, { status: result.status });
+    }
+    return Response.json(result.data, { status: result.status });
+  }
+
+  const supabase = createServerSupabaseClient();
   const { usuario, ...fields } = body ?? {};
 
   if (!isEmpresa(usuario)) {
@@ -81,8 +121,17 @@ export async function PUT(request, { params }) {
 }
 
 export async function DELETE(request, { params }) {
-  const supabase = createServerSupabaseClient();
   const { id } = await params;
+
+  if (isCrudTestMode(request)) {
+    const result = await testMascotasDelete(id);
+    if (result.error) {
+      return Response.json({ error: result.error }, { status: result.status });
+    }
+    return new Response(null, { status: result.status });
+  }
+
+  const supabase = createServerSupabaseClient();
   const body = await request.json().catch(() => ({}));
   const usuario = body?.usuario;
 
