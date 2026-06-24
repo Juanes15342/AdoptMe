@@ -1,9 +1,9 @@
-# 🐶 AdoptMe - Plataforma de Adopción de Mascotas
-## 📦 PrimerSprint
+# AdoptMe - Plataforma de Adopción de Mascotas
+## PrimerSprint
 
 ---
 
-## 📝 Descripción del proyecto
+## Descripción del proyecto
 
 **AdoptMe** es una plataforma web desarrollada con el objetivo de conectar personas interesadas en adoptar mascotas con empresas y refugios encargados de ofrecer animales en adopción.
 
@@ -13,11 +13,11 @@ El proyecto fue desarrollado bajo la metodología ágil **Scrum**, utilizando un
 
 ---
 
-## 🏛️ Arquitectura del sistema
+## Arquitectura del sistema
 
 AdoptMe sigue una arquitectura cliente-servidor basada en tres componentes principales:
 
-### 🖥️ Frontend
+### Frontend
 El frontend está desarrollado con **Next.js** utilizando **App Router**, JavaScript, CSS y componentes del lado del cliente.
 
 **Se encarga de:**
@@ -33,7 +33,7 @@ El frontend está desarrollado con **Next.js** utilizando **App Router**, JavaSc
 *   CSS
 *   HTML5
 
-### ⚙️ Backend y lógica de negocio
+### Backend y lógica de negocio
 El proyecto utiliza **Supabase** como Backend as a Service (BaaS), encargándose de gran parte de la lógica del servidor.
 
 **Servicios utilizados:**
@@ -53,14 +53,14 @@ El proyecto utiliza **Supabase** como Backend as a Service (BaaS), encargándose
 
 La comunicación se realiza mediante el cliente oficial de Supabase configurado dentro de la carpeta `lib`.
 
-### 🗄️ Base de datos
+### Base de datos
 La base de datos se encuentra alojada en **PostgreSQL** mediante **Supabase**.
 
 ---
 
-## 🔑 Entidades principales
+## Entidades principales
 
-### 👤 Usuarios
+### Usuarios
 Almacena la información de los clientes y administradores.
 *   **Campos generales:**
     *   ID del usuario.
@@ -69,14 +69,14 @@ Almacena la información de los clientes y administradores.
     *   Contraseña encriptada mediante Supabase Auth.
     *   Rol dentro de la plataforma.
 
-### 🏢 Empresas
+### Empresas
 Contiene la información de los refugios o entidades encargadas de publicar mascotas.
 *   **Información almacenada:**
     *   Datos de la empresa.
     *   Información de contacto.
     *   Mascotas publicadas.
 
-### 🐾 Mascotas
+### Mascotas
 Contiene los animales disponibles para adopción.
 *   **Información almacenada:**
     *   Nombre.
@@ -87,7 +87,7 @@ Contiene los animales disponibles para adopción.
     *   Imagen.
     *   Empresa responsable.
 
-### 📩 Solicitudes de adopción
+### Solicitudes de adopción
 Registra las postulaciones realizadas por los usuarios.
 *   **Incluye:**
     *   Usuario solicitante.
@@ -97,11 +97,11 @@ Registra las postulaciones realizadas por los usuarios.
 
 ---
 
-## 🎭 Gestión de roles
+## Gestión de roles
 
 El sistema cuenta con tres roles principales:
 
-### 👤 Cliente
+### Cliente
 *   **Puede:**
     *   Registrarse e iniciar sesión.
     *   Consultar el catálogo de mascotas.
@@ -109,7 +109,7 @@ El sistema cuenta con tres roles principales:
     *   Realizar solicitudes de adopción.
     *   Gestionar su información personal.
 
-### 🏢 Empresa
+### Empresa
 *   **Puede:**
     *   Gestionar su perfil empresarial.
     *   Publicar mascotas.
@@ -118,7 +118,7 @@ El sistema cuenta con tres roles principales:
     *   Aprobar o rechazar solicitudes.
     *   Cambiar el estado de adopción de una mascota.
 
-### 👑 Administrador
+### Administrador
 *   **Funciones en desarrollo:**
     *   Visualizar estadísticas del sistema.
     *   Gestionar usuarios registrados.
@@ -128,7 +128,7 @@ El sistema cuenta con tres roles principales:
 
 ---
 
-## 📁 Estructura del proyecto
+## Estructura del proyecto
 
 ```text
 ADOPTME/
@@ -166,7 +166,7 @@ ADOPTME/
 
 ---
 
-## 🧪 Pruebas y documentación de API
+## Pruebas y documentación de API
 
 El proyecto incorpora documentación y pruebas de la API mediante Swagger, permitiendo visualizar y validar los servicios disponibles.
 
@@ -178,7 +178,7 @@ El proyecto incorpora documentación y pruebas de la API mediante Swagger, permi
 
 ---
 
-## 🛠️ Instalación y ejecución local
+## Instalación y ejecución local
 
 ### Requisitos previos
 *   Node.js
@@ -212,7 +212,7 @@ La aplicación estará disponible en: [http://localhost:3000](http://localhost:3
 
 ---
 
-## 📈 Estado actual del proyecto
+## Estado actual del proyecto
 
 Actualmente AdoptMe cuenta con funcionalidades implementadas de autenticación, gestión de mascotas y proceso de adopción.
 
@@ -232,7 +232,7 @@ Actualmente AdoptMe cuenta con funcionalidades implementadas de autenticación, 
 
 ---
 
-## 👥 Equipo de desarrollo
+## Equipo de desarrollo
 
 Proyecto desarrollado como parte del programa **Análisis y Desarrollo de Software (ADSO)** utilizando la metodología **Scrum**.
 
