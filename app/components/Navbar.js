@@ -146,10 +146,20 @@ export default function Navbar() {
 
           {usuario ? (
             <>
-              {rol !== 'empresa' && (
+              {rol === 'administrador' && (
                 <li>
                   <Link
-                    href={dashboardHref}
+                    href="/dashboard/admin"
+                    className="transition-colors text-amber-700 hover:text-amber-800 dark:text-amber-500 dark:hover:text-amber-400 font-semibold"
+                  >
+                    Panel Admin
+                  </Link>
+                </li>
+              )}
+              {rol === 'usuario' && (
+                <li>
+                  <Link
+                    href="/dashboard/user"
                     className="transition-colors hover:text-zinc-900 dark:hover:text-white"
                   >
                     Mi panel
