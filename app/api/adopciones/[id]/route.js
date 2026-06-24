@@ -57,7 +57,7 @@ export async function PUT(request, { params }) {
   const supabase = createServerSupabaseClient();
   const { estado } = body ?? {};
 
-  const estadoNormalizado =
+  let estadoNormalizado =
     typeof estado === "string" ? estado.trim().toLowerCase() : "";
 
   if (!estadoNormalizado || !ESTADOS_VALIDOS.includes(estadoNormalizado)) {
@@ -65,6 +65,12 @@ export async function PUT(request, { params }) {
       { error: `Estado no válido. Usa: ${ESTADOS_VALIDOS.join(", ")}` },
       { status: 400 }
     );
+  }
+
+  if (estadoNormalizado === "aprobado") {
+    estadoNormalizado = "aprobada";
+  } else if (estadoNormalizado === "rechazado") {
+    estadoNormalizado = "rechazada";
   }
 
   const { data, error } = await supabase

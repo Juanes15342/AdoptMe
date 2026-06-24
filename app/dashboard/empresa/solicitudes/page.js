@@ -97,7 +97,16 @@ export default function SolicitudesEmpresaPage() {
         setError(msg)
         return
       }
-      setSolicitudes(Array.isArray(data) ? data : [])
+      const solicitudesMapeadas = (Array.isArray(data) ? data : []).map((sol) => ({
+        ...sol,
+        estado:
+          sol.estado === 'aprobada'
+            ? 'aprobado'
+            : sol.estado === 'rechazada'
+            ? 'rechazado'
+            : sol.estado,
+      }))
+      setSolicitudes(solicitudesMapeadas)
     } catch {
       setError('Error de conexión al cargar solicitudes')
     } finally {
